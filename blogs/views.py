@@ -1,47 +1,98 @@
-from rest_framework.generics import ListCreateAPIView
+from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
-from rest_framework.pagination import PageNumberPagination
-from rest_framework.status import (
-    HTTP_201_CREATED,
-    HTTP_200_OK
+from rest_framework.status import HTTP_201_CREATED
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.generics import (
+    CreateAPIView,
+    ListAPIView,
+    RetrieveAPIView,
+    RetrieveUpdateAPIView,
+    DestroyAPIView
 )
 
+from blogs.permissions import IsAdminAndHasToken
 from blogs.models import BlogsAPIModel
-from blogs.serializers import BlogsAPISerializer
+from blogs.pagination import BlogPagination
+from blogs.serializers import BlogsAPISerializer, JWTTokenSerializer
 
 
-class BlogListCreateAPIView(ListCreateAPIView):
+class BlogListCreateAPIView(CreateAPIView):
     model = BlogsAPIModel
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAdminAndHasToken]
     queryset = BlogsAPIModel.objects.all()
     serializer_class = BlogsAPISerializer
-    pagination_class = PageNumberPagination
 
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        print({"data": queryset})
-        # assert queryset is None, ObjectDoesNotExist("Database is empty.")
-        paginated_query = self.pagination_class().paginate_queryset(queryset=queryset, request=request, view=self)
-        serializer = self.get_serializer(paginated_query, many=True)
-        data = self.pagination_class().get_paginated_response(data=serializer.data)
-        return data
+    def get(self, request, pk, *args, **kwargs):
+        blog = self.model.objects.get(pk=pk)
+
+        # Check if the blog has been viewed in the current session
+        if not request.session.get(f'blog_viewed_{blog.pk}'):
+            blog.view_count += 1
+            blog.save()
+            request.session[f'blog_viewed_{blog.pk}'] = True
+        return super().get(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            title = serializer.validated_data.get("title")
-            content = serializer.validated_data.get("content")
-            image = serializer.validated_data.get("image")
-
-            record = self.model(
-                title=title,
-                content=content,
-                image=image
-            )
-            record.save()
-            success_list = self.list(request, *args, **kwargs)
-            return Response(data=success_list, status=HTTP_201_CREATED)
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=HTTP_201_CREATED, headers=headers)
         else:
             raise ValidationError("Serializer validation failed!")
 
-# Paginationda muammosi qoldi. tugirlash kerak
+    def perform_create(self, serializer):
+        serializer.save()
+
+
+class BlogListRetrieveAPIView(ListAPIView):
+    model = BlogsAPIModel
+    queryset = BlogsAPIModel.objects.all()
+    pagination_class = BlogPagination
+    serializer_class = BlogsAPISerializer
+
+
+class BlogRetrieveDetailAPIView(RetrieveAPIView):
+    model = BlogsAPIModel
+    queryset = BlogsAPIModel.objects.all()
+    serializer_class = BlogsAPISerializer
+
+    def get(self, request, pk, *args, **kwargs):
+        blog = self.model.objects.get(pk=pk)
+
+        # Check if the blog has been viewed in the current session
+        if not request.session.get(f'blog_viewed_{blog.pk}'):
+            blog.view_count += 1
+            blog.save()
+            request.session[f'blog_viewed_{blog.pk}'] = True
+        return super().get(request, *args, **kwargs)
+
+
+class BlogEditRetrieveAPIView(RetrieveUpdateAPIView):
+    model = BlogsAPIModel
+    serializer_class = BlogsAPISerializer
+    queryset = BlogsAPIModel.objects.all()
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAdminAndHasToken]
+
+
+class BlogDeleteAPIView(DestroyAPIView):
+    model = BlogsAPIModel
+    queryset = BlogsAPIModel.objects.all()
+    serializer_class = BlogsAPISerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAdminAndHasToken]
+
+
+class JWTObtainTokenView(ObtainAuthToken):
+    serializer_class = JWTTokenSerializer
+    authentication_classes = []
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        token = serializer.save()
+        return Response({'token': token['token']})
