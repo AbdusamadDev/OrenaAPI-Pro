@@ -1,9 +1,9 @@
+from django.shortcuts import render
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from rest_framework.status import HTTP_201_CREATED
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import (
     CreateAPIView,
     ListAPIView,
@@ -16,6 +16,10 @@ from blogs.permissions import IsAdminAndHasToken
 from blogs.models import BlogsAPIModel
 from blogs.pagination import BlogPagination
 from blogs.serializers import BlogsAPISerializer, JWTTokenSerializer
+
+
+def home(request):
+    return render(request, "home.html", {})
 
 
 class BlogListCreateAPIView(CreateAPIView):
