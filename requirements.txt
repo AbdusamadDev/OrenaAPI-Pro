@@ -4,3 +4,4 @@ pillow
 python-jose
 djangorestframework-jwt
 python-dotenv
+gunicorn
