@@ -1,8 +1,9 @@
 from django.shortcuts import render
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
-from rest_framework.status import HTTP_201_CREATED
+from rest_framework.status import HTTP_201_CREATED, HTTP_404_NOT_FOUND
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.generics import (
     CreateAPIView,
@@ -65,14 +66,20 @@ class BlogRetrieveDetailAPIView(RetrieveAPIView):
     serializer_class = BlogsAPISerializer
 
     def get(self, request, pk, *args, **kwargs):
-        blog = self.model.objects.get(pk=pk)
+        try:
+            blog = self.model.objects.get(pk=pk)
 
-        # Check if the blog has been viewed in the current session
-        if not request.session.get(f'blog_viewed_{blog.pk}'):
-            blog.view_count += 1
-            blog.save()
-            request.session[f'blog_viewed_{blog.pk}'] = True
-        return super().get(request, *args, **kwargs)
+            # Check if the blog has been viewed in the current session
+            if not request.session.get(f'blog_viewed_{blog.pk}'):
+                blog.view_count += 1
+                blog.save()
+                request.session[f'blog_viewed_{blog.pk}'] = True
+            return super().get(request, *args, **kwargs)
+        except ObjectDoesNotExist:
+            return Response(
+                data={"msg": "Data you are searching does not exist!"},
+                status=HTTP_404_NOT_FOUND
+            )
 
 
 class BlogEditRetrieveAPIView(RetrieveUpdateAPIView):
@@ -81,6 +88,15 @@ class BlogEditRetrieveAPIView(RetrieveUpdateAPIView):
     queryset = BlogsAPIModel.objects.all()
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAdminAndHasToken]
+
+    def get(self, request, *args, **kwargs):
+        try:
+            super().get(request, *args, **kwargs)
+        except ObjectDoesNotExist:
+            return Response(
+                data={"msg": "Data you are searching does not exist!"},
+                status=HTTP_404_NOT_FOUND
+            )
 
 
 class BlogDeleteAPIView(DestroyAPIView):

@@ -39,8 +39,6 @@ class BlogsAPISerializer(serializers.ModelSerializer):
         return value
 
 
-
-
 class JWTTokenSerializer(AuthTokenSerializer):
     def create(self, validated_data):
         user = validated_data['user']
