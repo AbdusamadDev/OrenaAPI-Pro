@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     "blogs",
+    "storages"
 ]
 
 MIDDLEWARE = [
@@ -105,3 +106,15 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media/")
 SESSION_COOKIE_AGE = 1800  # session vaqti. prosmotr har doim refresh bersa bomaydi, har 30minutta boladi
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# AWS Deployment details _-------------------------------------------------------------------------------
+
+AWS_ACCESS_KEY_ID = "AKIA437CLVMGDP2YU7G6"
+AWS_SECRET_ACCESS_KEY = "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"
+AWS_STORAGE_BUCKET_NAME = "files-bucket-001"
+DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+STATICFILES_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
+
+# Amazon static files serving youtube video is: https://www.youtube.com/watch?v=980gAjwR44I
+# Amazon deployment video:

@@ -5,3 +5,5 @@ python-jose
 djangorestframework-jwt
 python-dotenv
 gunicorn
+boto3
+django-storages
