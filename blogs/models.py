@@ -1,4 +1,7 @@
 from django.db import models
+from rest_framework.authtoken.models import Token as T
+
+from datetime import datetime
 
 
 class BlogsAPIModel(models.Model):
@@ -16,3 +19,11 @@ class BlogsAPIModel(models.Model):
         indexes = [
             models.Index(fields=['title'])
         ]
+
+#
+# class Token(T):
+#     date_created = models.DateTimeField()
+#
+#     def save(self, *args, **kwargs):
+#         self.date_created = datetime.now()
+#         return super().save(*args, **kwargs)

@@ -1,10 +1,15 @@
-from django.shortcuts import render
-from django.core.exceptions import ObjectDoesNotExist
+from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.authentication import authenticate
+from django.shortcuts import render
+from django.contrib.auth import login
+from rest_framework.permissions import IsAuthenticated
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
-from rest_framework.status import HTTP_201_CREATED, HTTP_404_NOT_FOUND
-from rest_framework.authentication import TokenAuthentication
+from rest_framework.status import HTTP_201_CREATED, HTTP_404_NOT_FOUND, HTTP_401_UNAUTHORIZED
+from rest_framework.authentication import TokenAuthentication, SessionAuthentication
+from rest_framework.permissions import IsAdminUser
 from rest_framework.generics import (
     CreateAPIView,
     ListAPIView,
@@ -13,10 +18,9 @@ from rest_framework.generics import (
     DestroyAPIView
 )
 
-from blogs.permissions import IsAdminAndHasToken
 from blogs.models import BlogsAPIModel
 from blogs.pagination import BlogPagination
-from blogs.serializers import BlogsAPISerializer, JWTTokenSerializer
+from blogs.serializers import BlogsAPISerializer, UserAuthSerializer
 
 
 def home(request):
@@ -25,8 +29,7 @@ def home(request):
 
 class BlogListCreateAPIView(CreateAPIView):
     model = BlogsAPIModel
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAdminAndHasToken]
+    permission_classes = [IsAuthenticated, IsAdminUser]
     queryset = BlogsAPIModel.objects.all()
     serializer_class = BlogsAPISerializer
 
@@ -68,7 +71,6 @@ class BlogRetrieveDetailAPIView(RetrieveAPIView):
     def get(self, request, pk, *args, **kwargs):
         try:
             blog = self.model.objects.get(pk=pk)
-
             # Check if the blog has been viewed in the current session
             if not request.session.get(f'blog_viewed_{blog.pk}'):
                 blog.view_count += 1
@@ -86,8 +88,7 @@ class BlogEditRetrieveAPIView(RetrieveUpdateAPIView):
     model = BlogsAPIModel
     serializer_class = BlogsAPISerializer
     queryset = BlogsAPIModel.objects.all()
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAdminAndHasToken]
+    permission_classes = [IsAuthenticated, IsAdminUser]
 
     def get(self, request, *args, **kwargs):
         try:
@@ -103,16 +104,24 @@ class BlogDeleteAPIView(DestroyAPIView):
     model = BlogsAPIModel
     queryset = BlogsAPIModel.objects.all()
     serializer_class = BlogsAPISerializer
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAdminAndHasToken]
+    permission_classes = [IsAuthenticated, IsAdminUser]
 
 
-class JWTObtainTokenView(ObtainAuthToken):
-    serializer_class = JWTTokenSerializer
-    authentication_classes = []
+class ObtainAuthenticationTokenAPIView(ObtainAuthToken):
+    authentication_classes = [SessionAuthentication]
+    serializer_class = UserAuthSerializer
 
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
-        token = serializer.save()
-        return Response({'token': token['token']})
+        user = authenticate(
+            username=serializer.validated_data.get("username"),
+            password=serializer.validated_data.get("password")
+        )
+        if user:
+            login(request, user)
+            token, created = Token.objects.get_or_create(user=user)
+            print(created)
+            print(token.created)
+            return Response(data={"msg": str(token)}, status=HTTP_201_CREATED)
+        return Response(data={"msg": "Authentication credentials failed!"}, status=HTTP_401_UNAUTHORIZED)

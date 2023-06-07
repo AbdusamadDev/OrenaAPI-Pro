@@ -8,5 +8,5 @@ urlpatterns = [
     path("<int:pk>/details/", views.BlogRetrieveDetailAPIView.as_view(), name="details"),
     path("<int:pk>/edit/", views.BlogEditRetrieveAPIView.as_view(), name="edit"),
     path("<int:pk>/delete/", views.BlogDeleteAPIView.as_view(), name="delete"),
-    path("get-token/", views.JWTObtainTokenView.as_view(), name="get-token"),
+    path("get-token/", views.ObtainAuthenticationTokenAPIView.as_view(), name="get-token"),
 ]
