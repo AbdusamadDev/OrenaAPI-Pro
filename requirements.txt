@@ -7,3 +7,4 @@ python-dotenv
 gunicorn
 boto3
 django-storages
+requests

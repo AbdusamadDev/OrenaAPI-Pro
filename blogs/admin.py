@@ -1,3 +1,5 @@
 from django.contrib import admin
+from blogs.models import CategoryModel, BlogsAPIModel
 
-# Register your models here.
+admin.site.register(CategoryModel)
+admin.site.register(BlogsAPIModel)

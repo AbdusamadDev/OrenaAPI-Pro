@@ -16,7 +16,7 @@ class BlogsAPISerializer(serializers.ModelSerializer):
 
     class Meta:
         model = BlogsAPIModel
-        fields = '__all__'
+        fields = ["title", "content", "image", "category"]
 
     def validate_image(self, value):
         image = Image.open(value)
@@ -37,10 +37,5 @@ class BlogsAPISerializer(serializers.ModelSerializer):
 
 
 class UserAuthSerializer(serializers.Serializer):
-    # class Meta:
-    #     model = User
-    #     fields = ["username", "password"]
     username = serializers.CharField(max_length=200, allow_null=False)
     password = serializers.CharField(max_length=200, allow_null=False)
-
-

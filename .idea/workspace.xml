@@ -5,14 +5,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3702df10-015e-4b45-bd20-4576963f9bf0" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/blogs/authentication.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/blogs/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/blogs/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/blogs/permissions.py" beforeDir="false" afterPath="$PROJECT_DIR$/blogs/permissions.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/blogs/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/blogs/serializers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/blogs/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/blogs/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/blogs/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/blogs/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/config/settings.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/db.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/db.sqlite3" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -45,7 +37,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "git-widget-placeholder": "main",
-    "last_opened_file_path": "C:/Backend Project/Projects/OrenaAPI-Pro"
+    "last_opened_file_path": "C:/Backend Project/Projects/TurboType"
   }
 }]]></component>
   <component name="RunManager">
